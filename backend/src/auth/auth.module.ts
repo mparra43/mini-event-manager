@@ -1,37 +1,42 @@
-import { Module } from '@nestjs/common';
+import { Module, MiddlewareConsumer, NestModule } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { PassportModule } from '@nestjs/passport';
-import { AuthController } from './controllers/auth.controller';
-import { AuthService } from './services/auth.service';
-import { UserRepository } from './repositories/user.repository';
-import { PrismaService } from '../common/services/prisma.service';
-import { JwtStrategy } from './strategies/jwt.strategy';
-
+import { AuthController } from './presentation/controllers/auth.controller';
+import { RegisterUseCase } from './application/use-cases/register.use-case';
+import { LoginUseCase } from './application/use-cases/login.use-case';
+import { PrismaUserRepository } from './infrastructure/repositories/prisma-user.repository';
+import { PrismaService } from '../prisma.service';
+import { JwtProvider, JWT_PROVIDER } from './infrastructure/providers/jwt-provider';
+import { JwtStrategy } from './infrastructure/strategies/jwt.strategy';
+import { JwtAuthGuard } from './infrastructure/guards/jwt-auth.guard';
+import { AuthMiddleware } from './middleware/auth.middleware';
+import { USER_REPOSITORY } from './domain/repositories/user.repository';
 
 @Module({
   imports: [
-    PassportModule,
-    JwtModule.registerAsync({
-      imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => ({
-        secret: configService.get<string>('JWT_SECRET') || 'your-secret-key',
-        signOptions: { expiresIn: '1d' },
-      }),
-      inject: [ConfigService],
+    JwtModule.register({
+      secret: process.env.JWT_SECRET || 'default_jwt_secret',
+      signOptions: { expiresIn: '1h' },
     }),
-    ConfigModule,
   ],
   controllers: [AuthController],
   providers: [
-    AuthService,
-    JwtStrategy,
-    {
-      provide: 'IUserRepository',
-      useClass: UserRepository,
-    },
+    RegisterUseCase,
+    LoginUseCase,
     PrismaService,
+    PrismaUserRepository,
+    { provide: USER_REPOSITORY, useClass: PrismaUserRepository },
+    { provide: JWT_PROVIDER, useClass: JwtProvider },
+    JwtStrategy,
+    JwtAuthGuard,
+    AuthMiddleware,
   ],
-  exports: [AuthService, JwtStrategy, PassportModule],
+  exports: [JwtAuthGuard, JwtModule, AuthMiddleware, JWT_PROVIDER],
 })
-export class AuthModule {}
+
+export class AuthModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    // Example: apply middleware to routes that need it
+    // consumer.apply(AuthMiddleware).forRoutes('events');
+  }
+}
+  

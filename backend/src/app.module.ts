@@ -2,20 +2,23 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { EventsModule } from './events/events.module';
+import appConfig from './config/app.config';
 import { AuthModule } from './auth/auth.module';
-import { PrismaService } from './common/services/prisma.service';
+import { EventModule } from './event/event.module';
+
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      load: [appConfig],
       envFilePath: '.env',
     }),
-    EventsModule,
     AuthModule,
+    EventModule,
   ],
   controllers: [AppController],
-  providers: [AppService, PrismaService],
+  providers: [AppService],
+  exports: [],
 })
-export class AppModule {}
+export class AppModule { }

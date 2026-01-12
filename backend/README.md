@@ -93,6 +93,62 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 - Website - [https://nestjs.com](https://nestjs.com/)
 - Twitter - [@nestframework](https://twitter.com/nestframework)
 
+## Docker & Prisma (local development)
+
+Run a Postgres container and the Nest app with Prisma applied:
+
+```bash
+# Copy example env
+cp .env.example .env
+# optionally edit .env to set POSTGRES_USER/POSTGRES_PASSWORD/POSTGRES_DB
+# Build and start
+docker compose up --build
+```
+
+The app runs on port 3000 and connects to the `postgres` service using `DATABASE_URL` set in `docker-compose.yml`.
+
+If you want to apply schema changes manually:
+
+```bash
+# inside the running app container
+npx prisma db push
+```
+
+Apply migrations locally (recommended):
+
+```bash
+# start Postgres in detached mode from the backend folder
+docker compose up -d
+
+# run migrations from your host (requires Postgres running on localhost:5432)
+npx prisma migrate dev --schema=prisma/schema.prisma --name init
+
+# or run migration inside the running app container
+# docker compose exec app npx prisma migrate dev --schema=prisma/schema.prisma --name init
+```
+
+Authentication & seed (quick test)
+
+```bash
+# 1. Create .env from .env.example and configure DATABASE_URL and JWT_SECRET
+cp .env.example .env
+
+# 2. Install deps and generate client
+npm install
+npm run prisma:generate
+
+# 3. Apply schema and seed a test user
+npm run prisma:dbpush
+npm run seed
+# User created: test@example.com / Password123
+
+# 4. Start the app and visit Swagger
+npm run start:dev
+# Swagger: http://localhost:3001/docs
+```
+
+---
+
 ## License
 
 Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).

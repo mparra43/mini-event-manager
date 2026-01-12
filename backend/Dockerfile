@@ -1,34 +1,34 @@
-FROM node:20-alpine AS builder
+# Build stage
+FROM node:20-bullseye-slim AS builder
+WORKDIR /usr/src/app
 
-WORKDIR /app
-
-COPY package*.json ./
-COPY tsconfig*.json ./
-COPY nest-cli.json ./
+# Install app dependencies
+COPY package.json package-lock.json* ./
+# Ensure Prisma schema is present for postinstall hooks
 COPY prisma ./prisma
+RUN npm install
 
-RUN npm ci
-
+# Copy rest of the sources
 COPY . .
 
-RUN npx prisma generate
+# Generate Prisma client and build
+RUN npm run prisma:generate
 RUN npm run build
 
-FROM node:20-alpine AS production
-
-WORKDIR /app
-
+# Runner stage
+FROM node:20-bullseye-slim AS runner
+WORKDIR /usr/src/app
 ENV NODE_ENV=production
 
-COPY package*.json ./
+COPY --from=builder /usr/src/app/package.json ./
+COPY --from=builder /usr/src/app/node_modules ./node_modules
+COPY --from=builder /usr/src/app/dist ./dist
 
-RUN npm ci --only=production && npm cache clean --force
-
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/prisma ./prisma
-COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
-COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
+# Copy entrypoint that applies Prisma schema on startup
+COPY docker-entrypoint.sh ./docker-entrypoint.sh
+RUN chmod +x ./docker-entrypoint.sh
 
 EXPOSE 3000
 
+ENTRYPOINT ["./docker-entrypoint.sh"]
 CMD ["node", "dist/main"]
