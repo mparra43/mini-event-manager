@@ -20,12 +20,12 @@ export const Button: React.FC<ButtonProps> = ({
   variant = "primary",
   floating = false,
 }) => {
-  const base = "inline-flex items-center justify-center rounded px-4 py-2 font-medium focus:outline-none";
+  const base = "inline-flex items-center justify-center rounded-full px-5 py-3 font-medium focus:outline-none transition-colors";
 
   const variantClass =
     variant === "primary"
-      ? "bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
-      : "bg-gray-200 text-gray-800 hover:bg-gray-300 disabled:opacity-50";
+      ? "bg-gradient-to-r from-emerald-400 to-green-500 text-white shadow-md hover:from-emerald-500 hover:to-green-600 disabled:opacity-50"
+      : "bg-white text-emerald-700 border border-emerald-200 hover:bg-emerald-50 disabled:opacity-50";
 
   const floatingClass =
     floating

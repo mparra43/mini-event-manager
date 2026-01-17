@@ -24,21 +24,21 @@ export const InputDate: React.FC<InputDateProps> = ({ label, name, control, plac
   }
 
   return (
-    <div className="form-control">
-      <label className="label">
-        <span className="label-text">{label}</span>
-      </label>
+    <div className="w-full">
+      <label className="block text-sm font-medium text-emerald-800 mb-1">{label}</label>
       <Controller
         name={name}
         control={control}
         rules={combinedRules}
+        defaultValue=""
         render={({ field, fieldState }) => (
           <>
             <input
               {...field}
+              value={field.value ?? ""}
               type="datetime-local"
               placeholder={placeholder}
-              className={`input input-bordered w-full ${fieldState.error ? "input-error" : ""}`}
+              className={`w-full rounded-xl bg-white px-4 py-3 text-black shadow-sm ring-1 ring-emerald-200 focus:ring-emerald-400 outline-none ${fieldState.error ? "ring-red-300" : ""}`}
             />
             {fieldState.error && (
               <p className="text-sm text-red-600 mt-1">{fieldState.error.message}</p>

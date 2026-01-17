@@ -13,13 +13,12 @@ interface ListProps<T> {
   columns?: number;
   cardSize?: "small" | "large";
   mapItemToCard: (item: T) => MappedCard;
+  onItemClick?: (item: T) => void;
 }
 
-export function List<T>({ items, columns = 1, cardSize = "small", mapItemToCard }: ListProps<T>) {
-  // Build responsive grid classes. Avoid dynamic strings that Tailwind cannot detect by mapping.
+export function List<T>({ items, columns = 1, cardSize = "small", mapItemToCard, onItemClick }: ListProps<T>) {
   const classes = ["grid", "gap-4", "w-full"];
 
-  // Always ensure at least 1 column on smallest screens
   classes.push("grid-cols-1");
 
   if (columns >= 2) classes.push("sm:grid-cols-2");
@@ -30,10 +29,25 @@ export function List<T>({ items, columns = 1, cardSize = "small", mapItemToCard 
     <div className={classes.join(" ") + " max-w-full"}>
       {items.map((item, idx) => {
         const card = mapItemToCard(item);
+        const key = (card.name || idx) + "-" + idx;
+
+        if (!onItemClick) {
+          return (
+            <div key={key} className="w-full">
+              <Card name={card.name} date={card.date} description={card.description} place={card.place} size={cardSize} />
+            </div>
+          );
+        }
+
         return (
-          <div key={(card.name || idx) + "-" + idx} className="w-full">
+          <button
+            key={key}
+            type="button"
+            onClick={() => onItemClick(item)}
+            className="w-full text-left"
+          >
             <Card name={card.name} date={card.date} description={card.description} place={card.place} size={cardSize} />
-          </div>
+          </button>
         );
       })}
     </div>

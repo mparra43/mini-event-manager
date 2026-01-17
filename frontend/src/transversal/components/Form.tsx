@@ -27,10 +27,11 @@ interface FormProps {
     disabled?: boolean;
   };
   onSubmit: (data: any) => void;
+  defaultValues?: any;
 }
 
-export const Form: React.FC<FormProps> = ({ schema, fields, buttonProps, onSubmit }) => {
-  const { control, handleSubmit } = useForm<any>({ resolver: zodResolver(schema as any) });
+export const Form: React.FC<FormProps> = ({ schema, fields, buttonProps, onSubmit, defaultValues }) => {
+  const { control, handleSubmit } = useForm<any>({ resolver: zodResolver(schema as any), defaultValues });
 
   const submitHandler: SubmitHandler<any> = (data) => onSubmit(data);
 

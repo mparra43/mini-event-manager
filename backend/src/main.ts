@@ -16,6 +16,13 @@ async function bootstrap() {
     }),
   );
 
+  app.enableCors({
+    origin: [/^https?:\/\/localhost(?::\d+)?$/],
+    credentials: true,
+    methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  });
+
   const config = new DocumentBuilder()
     .setTitle('Mini Event Manager API')
     .setDescription('API for authentication and events')
